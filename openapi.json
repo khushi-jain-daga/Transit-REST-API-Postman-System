@@ -1,0 +1,373 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Transit API Studio",
+    "version": "1.0.0",
+    "description": "Experiment 07 \u2014 Khushi Jain Daga | 23bcon1665. Local academic prototype; no authentication."
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Read health status",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "503": {
+            "description": "Database unavailable"
+          }
+        }
+      }
+    },
+    "/api/routes": {
+      "get": {
+        "summary": "Read route records",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        },
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Bus",
+                "Metro",
+                "Rail"
+              ]
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create route records",
+        "responses": {
+          "201": {
+            "description": "Successful response",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Created resource URL"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "409": {
+            "description": "Duplicate route code"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RouteInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/routes/{id}": {
+      "get": {
+        "summary": "Read route records",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Route not found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-fA-F0-9]{24}$"
+            }
+          }
+        ]
+      },
+      "put": {
+        "summary": "Replace route records",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Route not found"
+          },
+          "409": {
+            "description": "Duplicate route code"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-fA-F0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RouteInput"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Partially update route records",
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Route not found"
+          },
+          "409": {
+            "description": "Duplicate route code"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-fA-F0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoutePatch"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete route records",
+        "responses": {
+          "204": {
+            "description": "Successful response"
+          },
+          "500": {
+            "description": "Internal server error"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "404": {
+            "description": "Route not found"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-fA-F0-9]{24}$"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RouteInput": {
+        "type": "object",
+        "required": [
+          "code",
+          "origin",
+          "destination",
+          "mode",
+          "fare",
+          "duration",
+          "active"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "origin": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "destination": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "Bus",
+              "Metro",
+              "Rail"
+            ]
+          },
+          "fare": {
+            "type": "number",
+            "minimum": 0
+          },
+          "duration": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "example": {
+          "code": "TR-101",
+          "origin": "Jaipur",
+          "destination": "Jodhpur",
+          "mode": "Bus",
+          "fare": 350,
+          "duration": 330,
+          "active": true
+        }
+      },
+      "RoutePatch": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "origin": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "destination": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "Bus",
+              "Metro",
+              "Rail"
+            ]
+          },
+          "fare": {
+            "type": "number",
+            "minimum": 0
+          },
+          "duration": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "minProperties": 1,
+        "additionalProperties": false,
+        "example": {
+          "active": false
+        }
+      }
+    }
+  }
+}

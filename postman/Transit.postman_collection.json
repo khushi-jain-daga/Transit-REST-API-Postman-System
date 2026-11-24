@@ -1,0 +1,288 @@
+{
+  "info": {
+    "name": "Transit API Studio \u2014 Experiment 07",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8006"
+    },
+    {
+      "key": "routeId",
+      "value": ""
+    },
+    {
+      "key": "routeCode",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Health",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/health",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 List",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/routes",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Create",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/routes",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"{{routeCode}}\",\n  \"origin\": \"Jaipur\",\n  \"destination\": \"Jodhpur\",\n  \"mode\": \"Bus\",\n  \"fare\": 350,\n  \"duration\": 330,\n  \"active\": true\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"routeCode\", \"TR-\" + Date.now());",
+              "pm.collectionVariables.unset(\"routeId\");"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.collectionVariables.set(\"routeId\", pm.response.json()._id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Read",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/routes/{{routeId}}",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Duplicate code",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/routes",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"{{routeCode}}\",\n  \"origin\": \"Jaipur\",\n  \"destination\": \"Jodhpur\",\n  \"mode\": \"Bus\",\n  \"fare\": 350,\n  \"duration\": 330,\n  \"active\": true\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Replace",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/routes/{{routeId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"code\": \"{{routeCode}}\",\n  \"origin\": \"Jaipur\",\n  \"destination\": \"Jodhpur\",\n  \"mode\": \"Bus\",\n  \"fare\": 400,\n  \"duration\": 330,\n  \"active\": true\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Patch",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/routes/{{routeId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"active\": false\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Route paused\", () => pm.expect(pm.response.json().active).to.eql(false));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 Invalid body",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/routes",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fare\": -1\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 Delete",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/routes/{{routeId}}",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 Deleted route",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/routes/{{routeId}}",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 Invalid ID",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/routes/bad-id",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
